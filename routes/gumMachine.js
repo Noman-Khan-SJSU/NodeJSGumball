@@ -1,14 +1,17 @@
+/**
+ * New node file
+ */
+
 var mongo = require('mongodb');
 var crypto = require('crypto');
-var key = 'B3734jjH6F36DDYw0OTjBpJKy65asth4';
-
+var key = 'V77q995EZX36DDYw0OTjBpW0587i7DM4';
 var create_hash = function(state,ts){
 	var text = state + ts + key;
-	var	hmac = crypto.createHmac("sha256", key);
-		hmac.setEncoding('base64');
-		hmac.write(text);
-		hmac.end();
-	var	hash = hmac.read();
+	hmac = crypto.createHmac("sha256", key);
+	hmac.setEncoding('base64');
+	hmac.write(text);
+	hmac.end();
+	hash = hmac.read();
 	return hash;
 }
 
@@ -17,7 +20,7 @@ Db = mongo.Db,
 BSON = mongo.BSONPure;
 
 var server = new Server('ds039950.mongolab.com',39950,{auto_reconnect: true});
-var db = new Db('zee_cmpe281', server);
+db = new Db('zee_cmpe281', server);
 
 db.open(function(err, db) {
   db.authenticate("zee","zee123",function(err,success){
@@ -50,7 +53,7 @@ exports.addMachine = function(req, res){
 exports.listMachines = function(req, res){
 	db.collection('NodeGumballMachine', function(err, collection) {
         collection.find().toArray(function(err, list) {
-        	 res.render('listMachines', {result:list});
+        	 res.render('listMachines', {result:list});// res.send(items);
         });
     });
 }
@@ -58,6 +61,7 @@ exports.listMachines = function(req, res){
 
 exports.getDetails = function(req, res){
 	var id = req.params.id;
+	console.log("id: " + id);
 	db.collection('NodeGumballMachine', function(err, collection){
 		collection.findOne({'_id':new BSON.ObjectID(id)}, function(err, record){
 			var state = 'No Coin';
@@ -78,7 +82,6 @@ exports.updateMachine = function(req, res){
 	var now = new Date().getTime();
 	var diff = ((now-ts)/1000);
 	var hash_second = create_hash(state,ts);
-	var count=input.count;
 	
 	var data= {
 			id: id,
@@ -89,7 +92,7 @@ exports.updateMachine = function(req, res){
 	console.log(data);
 	
 	if(diff>120){
-		res.render('getDetails', {result: data, _id:id, state:state, ts:now,hash: hash_second, notify: 'Invalid Session'});
+		res.render('getDetails', {result: data, _id:id, state:state, ts:now,hash: hash, notify: 'Invalid Session'});
 	}
 	if(activity == "Insert Quarter"){
 		if(state == "No Coin"){
@@ -106,16 +109,11 @@ exports.updateMachine = function(req, res){
 			res.render('getDetails', {result: data, _id:id, state:state,ts:now, hash: create_hash(state, now), notify:'Please Insert Coin'});
 		}
 		else if(state == "Has Coin"){
-				db.collection('NodeGumballMachine', function(err, collection){
-					collection.findOne({'_id':new BSON.ObjectID(id)}, function(err, record){
-						count= record.count
-					});
-				});
-				if(count>0){
+				if(input.count>0){
 					var data1 = {
 							serialNo: input.serialNo,
 							modelNo: input.modelNo,
-							count: count - 1
+							count: input.count - 1
 					}
 				db.collection('NodeGumballMachine', function(err, collection){
 					collection.update({'_id':new BSON.ObjectID(id)}, data1, {safe:true}, function(err, result) {
@@ -129,10 +127,11 @@ exports.updateMachine = function(req, res){
 			            }
 					});
 				});
-			}
-			else{
-				res.render('getDetails', {result: data, ts: now, hash: create_hash(state, now), state: state, notify:'No Inventory'});
-			}
+				}
+				else{
+					res.render('getDetails', {result: data, ts: now, hash: create_hash(state, now), state: state, notify:'No Inventory'});
+				}
 		}
 	}
+	
 }
