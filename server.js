@@ -29,7 +29,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
+app.get('/', gumMachine.listMachines);
 app.get('/users', user.list);
 //app.get('/',gumMachine.addMachine);
 app.get('/getDetails/:id', gumMachine.getDetails);
