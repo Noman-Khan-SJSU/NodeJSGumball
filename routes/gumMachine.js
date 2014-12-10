@@ -19,16 +19,16 @@ var Server = mongo.Server,
 Db = mongo.Db,
 BSON = mongo.BSONPure;
 
-var server = new Server('ds039950.mongolab.com',39950,{auto_reconnect: true});
-db = new Db('zee_cmpe281', server);
+var server = new Server('ds061370.mongolab.com',61370,{auto_reconnect: true});
+db = new Db('noman-db', server);
 
 db.open(function(err, db) {
-  db.authenticate("zee","zee123",function(err,success){
+  db.authenticate("nomankhancmpe281","nomankhancmpe281",function(err,success){
 		if(!err) {
-	        console.log("Connected to 'zee_cmpe281' database");
-	        db.collection('NodeGumballMachine', {strict:true}, function(err, collection) {
+	        console.log("Connected to 'noman-db' database");
+	        db.collection('NodeJSGumball', {strict:true}, function(err, collection) {
 	            if (err) {
-	                console.log("The 'NodeGumballMachine' collection doesn't exist.");
+	                console.log("The 'NodeJSGumball' collection doesn't exist.");
 	            }
 	        });
 	    }
@@ -38,7 +38,7 @@ db.open(function(err, db) {
 
 exports.addMachine = function(req, res){
 	var machine = req.body;
-	db.collection('NodeGumballMachine', function(err, data){
+	db.collection('NodeJSGumball', function(err, data){
 		data.insert(machine, {safe: true}, function(err, result){
 			if (err) {
 	            res.send({'error':'Error occurred'});
@@ -51,7 +51,7 @@ exports.addMachine = function(req, res){
 }
 
 exports.listMachines = function(req, res){
-	db.collection('NodeGumballMachine', function(err, collection) {
+	db.collection('NodeJSGumball', function(err, collection) {
         collection.find().toArray(function(err, list) {
         	 res.render('listMachines', {result:list});// res.send(items);
         });
@@ -62,7 +62,7 @@ exports.listMachines = function(req, res){
 exports.getDetails = function(req, res){
 	var id = req.params.id;
 	console.log("id: " + id);
-	db.collection('NodeGumballMachine', function(err, collection){
+	db.collection('NodeJSGumball', function(err, collection){
 		collection.findOne({'_id':new BSON.ObjectID(id)}, function(err, record){
 			var state = 'No Coin';
 			var ts = new Date().getTime();
@@ -115,7 +115,7 @@ exports.updateMachine = function(req, res){
 							modelNo: input.modelNo,
 							count: input.count - 1
 					}
-				db.collection('NodeGumballMachine', function(err, collection){
+				db.collection('NodeJSGumball', function(err, collection){
 					collection.update({'_id':new BSON.ObjectID(id)}, data1, {safe:true}, function(err, result) {
 						if (err) {
 			                console.log('Error updating gumball: ' + err);
